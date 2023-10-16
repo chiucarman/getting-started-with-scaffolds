@@ -1,4 +1,14 @@
 class MoviesController < ApplicationController
+  def new
+    render template: "movies/new"
+  end
+
+  def edit
+    @the_movie = Movie.where(id: params.fetch(:id)).first
+
+    render template: "movies/edit"
+  end
+
   def index
     matching_movies = Movie.all
 
@@ -8,32 +18,40 @@ class MoviesController < ApplicationController
   end
 
   def show
-    the_id = params.fetch("path_id")
+    the_id = params.fetch("id")
 
     matching_movies = Movie.where({ :id => the_id })
 
-    @the_movie = matching_movies.at(0)
+  # @the_movie = matching_movies.at(0)
+    # @the_movie = matching_movies[0]
+    @the_movie = matching_movies.first
 
     render({ :template => "movies/show" })
   end
 
   def create
-    the_movie = Movie.new
-    the_movie.title = params.fetch("query_title")
-    the_movie.description = params.fetch("query_description")
-    the_movie.released = params.fetch("query_released", false)
+    @the_movie = Movie.new
+    @the_movie.title = params.fetch("query_title")
+    @the_movie.description = params.fetch("query_description")
+    @the_movie.released = params.fetch("query_released", false)
 
-    if the_movie.valid?
-      the_movie.save
+    if @the_movie.valid?
+      @the_movie.save
+
       redirect_to("/movies", { :notice => "Movie created successfully." })
     else
-      redirect_to("/movies", { :alert => the_movie.errors.full_messages.to_sentence })
+      # cookies[:title] = params.fetch("query_title")
+      # cookies[:description] = params.fetch("query_description")
+      # cookies[:released] = params.fetch("query_released")
+      # redirect_to("/movies/new", { :alert => @the_movie.errors.full_messages.to_sentence })
+
+      render({ :template => "movies/with_errors" })
     end
   end
 
   def update
-    the_id = params.fetch("path_id")
-    the_movie = Movie.where({ :id => the_id }).at(0)
+    the_id = params.fetch("id")
+    the_movie = Movie.where({ :id => the_id }).first
 
     the_movie.title = params.fetch("query_title")
     the_movie.description = params.fetch("query_description")
@@ -48,8 +66,8 @@ class MoviesController < ApplicationController
   end
 
   def destroy
-    the_id = params.fetch("path_id")
-    the_movie = Movie.where({ :id => the_id }).at(0)
+    the_id = params.fetch("id")
+    the_movie = Movie.where({ :id => the_id }).first
 
     the_movie.destroy
 
